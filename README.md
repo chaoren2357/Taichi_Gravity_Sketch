@@ -16,7 +16,7 @@ sudo 二仙桥
 <img width="387" alt="pic1" src="https://user-images.githubusercontent.com/37920501/203885822-c558f7ba-f5d1-4115-ae3f-b901e4ce0ed5.png">
 <img width="387" alt="pic2" src="https://user-images.githubusercontent.com/37920501/203885851-92aae210-d01c-4f5c-b525-936eaf61dda3.png">
 
-## 其他
+## 改进目标
 预计前期采用Taichi+Python进行编写，如果后面有时间考虑在前端进行实现
 
 # Taichi_Gravity_Sketch
