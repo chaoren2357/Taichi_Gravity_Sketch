@@ -24,13 +24,13 @@ sudo 二仙桥
 # Taichi_Gravity_Sketch
 Using gravity as a brush, and the universe as a canvas
 # Group Name
-sudo Twin-Fairies Bridge
+Sudo Twin-Fairies Bridge
 # Project Name
 Gravity Sketch
 # Introduction
 This project aims to take advantage of Taichi's computational speed in simulating the physical motion of particles to implement a drawing game.
 ## Background
-Seeing that many Taichi-related projects are based on particle simulation systems, we were inspired to implement a game that allows players to manipulate particles and achieve some goals by themselves. Inspired by the idea of the game "Shadowmatic", we decided to design the game by attracting particles to form a shape and scoring it against the target shape.
+Considering that many Taichi-related projects are based on particle simulation systems, we planned to implement a game that allows players to manipulate particles and achieve some goals by themselves. Inspired by the idea of the game "Shadowmatic", we decided to design the game by attracting particles to form a shape and scoring it against the target shape.
 ## Functions
 - The player is initially given a certain number of particles and a drawing target (shape contour line).
 - The player manipulates the position and the opening/closing of the graviton to attract the surrounding particles by using the mouse or screen touch.
@@ -39,5 +39,7 @@ Seeing that many Taichi-related projects are based on particle simulation system
 <img width="387" alt="pic1" src="https://user-images.githubusercontent.com/37920501/203885822-c558f7ba-f5d1-4115-ae3f-b901e4ce0ed5.png">
 <img width="387" alt="pic2" src="https://user-images.githubusercontent.com/37920501/203885851-92aae210-d01c-4f5c-b525-936eaf61dda3.png">
 
-## Other
-This project is anticipated to be realized by Taichi+Python in the early stage. If time permits, we will also consider using front-end method.
+## Possiple Upgrades
+- Adding particles of different shapes/colors, and the target shapes outline of different difficulty levels will be specially designed (e.g. split pieces, etc.).
+- Adding obstacles/flow fields on the field that can affect the player's control of particles.
+- Gravitons produce different types of attractions for different particles.
