@@ -1,9 +1,12 @@
 # Taichi_Gravity_Sketch
-以引力做画笔，以宇宙做画布
+以引力做画笔，以宇宙做画布 
+Using gravity as a brush, and the universe as a canvas
 # 团队名
-sudo 二仙桥
+Sudo 二仙桥 
+Sudo Twin-Fairies Bridge
 # 项目名
-引力绘图 Gravity Sketch
+引力绘图 
+Gravity Sketch
 # 项目介绍
 本项目旨在利用Taichi在模拟粒子物理运动方面的计算优势实现一个绘图游戏。
 ## 灵感来源
