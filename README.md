@@ -17,7 +17,9 @@ sudo 二仙桥
 <img width="387" alt="pic2" src="https://user-images.githubusercontent.com/37920501/203885851-92aae210-d01c-4f5c-b525-936eaf61dda3.png">
 
 ## 改进目标
-预计前期采用Taichi+Python进行编写，如果后面有时间考虑在前端进行实现
+ - 增加不同形状/颜色的粒子，关卡目标的轮廓会针对不同颜色/形状分别设计（比如分片等）；
+ - 场地上增加障碍物/流场，影响玩家操作；
+ - 引力子对于不同类型的粒子产生不同类型的吸引力；
 
 # Taichi_Gravity_Sketch
 Using gravity as a brush, and the universe as a canvas
