@@ -22,7 +22,7 @@ sudo 二仙桥
 # Taichi_Gravity_Sketch
 Using gravity as a brush, and the universe as a canvas
 # Group Name
-sudo DoubleGods Bridge
+sudo Twin-Fairies Bridge
 # Project Name
 Gravity Sketch
 # Introduction
