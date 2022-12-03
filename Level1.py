@@ -2,11 +2,7 @@ import taichi as ti
 import numpy as np
 import time
 from taichi.ui.gui import rgb_to_hex
-import yaml
 
-
-with open('params.yaml','r',encoding='utf8') as file:#utf8可识别中文
-    params=yaml.safe_load(file)
 
 ti.init(arch=ti.gpu)
 
@@ -37,16 +33,16 @@ grid_m = ti.field(dtype=float, shape=(n_grid, n_grid))  # grid node mass
 # gravity = ti.Vector.field(2, dtype=float, shape=())                                                                      
 attractor_strength = ti.field(dtype=float, shape=())                                                                     
 attractor_pos = ti.Vector.field(2, dtype=float, shape=())  
+drag_damping = ti.field(dtype=ti.f32, shape=())
 
 
 
 #set Target Shape------------------------------------------------------------
 
 target_polys_np_list = [
-    np.array([[0.2,0.4],[0.5,0.1],[0.8,0.4]]).astype(np.float32),
-    np.array([[0.2,0.6],[0.5,0.9],[0.8,0.6]]).astype(np.float32)
+    np.array([[0.2,0.4],[0.5,0.1],[0.8,0.4],[0.5,0.7]]).astype(np.float32),
     ]
-target_bounds_material = [2,2]
+target_bounds_material = [2]
 target_polys_vec_list,target_bound_xs,target_bound_ys = [],[],[]
 for i in range(len(target_polys_np_list)):
     target_poly_temp = ti.Vector.field(2, dtype=float,shape=(target_polys_np_list[i].shape[0],))
@@ -136,6 +132,7 @@ def substep():
             new_v += weight * g_v
             new_C += 4 * inv_dx * weight * g_v.outer_product(dpos)
         v[p], C[p] = new_v, new_C
+        v[p] *= ti.exp(-dt * drag_damping[None])
         x[p] += dt * v[p]  # advection  
                                                                                                                                                                                                                                                                                                 
 @ti.kernel                                                                                                             
@@ -194,19 +191,20 @@ def is_pt_in_poly(pt,poly):
 def update_isin():
     for pt in x:
         in_target_bound_0 = is_pt_in_poly(x[pt],target_polys_vec_list[0])
-        in_target_bound_1 = is_pt_in_poly(x[pt],target_polys_vec_list[1])
+        # in_target_bound_1 = is_pt_in_poly(x[pt],target_polys_vec_list[1])
         is_in[pt] = 0
         if in_target_bound_0 == 1 and target_bounds_material[0] == material[pt]:
             is_in[pt] = 1
-        elif in_target_bound_1 == 1 and target_bounds_material[1] == material[pt]:
-            is_in[pt] = 1
+        # elif in_target_bound_1 == 1 and target_bounds_material[1] == material[pt]:
+        #     is_in[pt] = 1
 
 def level1_main():   
     gui = ti.GUI("Level1", res=720, background_color=0x112F41)    
     # Show the score and time -----------------------------------------------------
     score = gui.label('Score')
     time_record = gui.label('Time(s)')   
-    gravity_scale = gui.slider('attaction_scale', 10, 100, step=5)    
+    attract_scale = gui.slider('attaction_scale', 0, 100, step=5)
+    damping_scale = gui.slider('damping scale', 0, 100, step=5)    
     score.value=0
     time_record.value=0
     start_time=time.time()
@@ -236,10 +234,11 @@ def level1_main():
         attractor_strength[None]=0                                                                               
         if gui.is_pressed(ti.GUI.LMB):   
             if mouse[0]<X_border or mouse[1]<Y_border:                                                                                    
-                attractor_strength[None] = gravity_scale.value/20                                                                                     
+                attractor_strength[None] = (14/(np.e-1)*np.exp(attract_scale.value/100) + 2-14/(np.e-1))                                                                                
         if gui.is_pressed(ti.GUI.RMB): 
             if mouse[0]<X_border or mouse[1]<Y_border:                                                                                         
-                attractor_strength[None] = -gravity_scale.value/20                                                                               
+                attractor_strength[None] = -(14/(np.e-1)*np.exp(attract_scale.value/100) + 2-14/(np.e-1))   
+        drag_damping[None] = damping_scale.value                                                                          
         for s in range(int(2e-3 // dt)):                                                                                     
              substep()                                                                                                       
         gui.circles(x.to_numpy(),                                                                                            
