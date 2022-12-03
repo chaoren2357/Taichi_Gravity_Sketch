@@ -1,5 +1,6 @@
 import taichi as ti    
 import numpy as np
+import time
 from taichi.ui.gui import rgb_to_hex
 ##attract stength value setting
 attract_Strength_Value=0.25
@@ -50,6 +51,8 @@ d1,d2=(Point1[0] - Point4[0]),(Point1[1] - Point4[1])
 RatioLst=np.zeros(20)
 PointsThreshold=PointsNum*intersectRatio
 #Set the Threshodl-----------------------------------------------------------
+ 
+
 
 @ti.kernel                                                  
 def substep():    
@@ -183,9 +186,18 @@ def CalculateIntersect(x):
 
 
 def level1_main():   
-    gui = ti.GUI("Taichi MLS-MPM-128", res=512, background_color=0x112F41)                               
+    gui = ti.GUI("Taichi MLS-MPM-128", res=512, background_color=0x112F41)    
+    #Show the score and time -----------------------------------------------------
+    score = gui.label('Score')
+    timeRecord = gui.label('Time(s)')   
+    Gravity_Scale = gui.slider('Gravity_Scale', 10, 100, step=5)    
+    score.value=0
+    timeRecord.value=0
+    startTime=time.time()
+    X_border,Y_border=0.605,0.835
     reset()  #n_particles,x,material,v,F,Jp,C                                                                                                             
-    # gravity[None] = [0, 0]                                                                                                  
+    #Show the score and time -----------------------------------------------------
+                                              
     currentCheck,lastCheck=False,False   
     frame=0
     while gui.running:   
@@ -194,33 +206,37 @@ def level1_main():
         ##Target Shape------------------------------------------------------------                                                                                          
         if gui.get_event(ti.GUI.PRESS):                                                                                      
             if gui.event.key == 'r':                                                                                         
-                reset()                                                                                                     
+                reset()    
+                startTime=time.time()
+                score.value=0    
+                frame=0                                                                                     
             elif gui.event.key in [ti.GUI.ESCAPE, ti.GUI.EXIT]:                                                              
                 break                                                                                                        
-        # if gui.event is not None:                                                                                            
-        #     gravity[None] = [0, 0]  # if had any event                                                                       
-        # if gui.is_pressed(ti.GUI.LEFT, 'a'):                                                                                 
-        #     gravity[None][0] = -1                                                                                            
-        # if gui.is_pressed(ti.GUI.RIGHT, 'd'):                                                                                
-        #     gravity[None][0] = 1                                                                                             
-        # if gui.is_pressed(ti.GUI.UP, 'w'):                                                                                   
-        #     gravity[None][1] = 1                                                                                             
-        # if gui.is_pressed(ti.GUI.DOWN, 's'):                                                                                 
-        #     gravity[None][1] = -1                                                                                            
+                                                                                              
         mouse = gui.get_cursor_pos()                                                                                         
         gui.circle((mouse[0], mouse[1]), color=0x336699, radius=15)                                                          
-        attractor_pos[None] = [mouse[0], mouse[1]]                                                                           
-        attractor_strength[None] = 0                                                                                         
-        if gui.is_pressed(ti.GUI.LMB):                                                                                       
-            attractor_strength[None] = attract_Strength_Value                                                                                     
-        if gui.is_pressed(ti.GUI.RMB):                                                                                       
-            attractor_strength[None] = -attract_Strength_Value                                                                                
+        attractor_pos[None] = [mouse[0], mouse[1]] 
+        # print([mouse[0], mouse[1]] )                                                                          
+        attractor_strength[None]=0                                                                               
+        if gui.is_pressed(ti.GUI.LMB):   
+            if mouse[0]<X_border or mouse[1]<Y_border:                                                                                    
+                attractor_strength[None] = Gravity_Scale.value/200                                                                                     
+        if gui.is_pressed(ti.GUI.RMB): 
+            if mouse[0]<X_border or mouse[1]<Y_border:                                                                                         
+                attractor_strength[None] = -Gravity_Scale.value/200                                                                               
         for s in range(int(2e-3 // dt)):                                                                                     
              substep()                                                                                                       
         gui.circles(x.to_numpy(),                                                                                            
                     radius=1.5,                                                                                              
                     palette=[0x068587, 0xED553B, 0xEEEEF0],                                                                  
                     palette_indices=material) 
+
+        # update time--------------------------------------------------------------
+        endTime=time.time()
+        currentTime=endTime-startTime
+        timeRecord.value=currentTime
+        # update time--------------------------------------------------------------
+
         if frame%40==0:
             if CalculateIntersect(x.to_numpy()):
                 currentCheck=True
@@ -228,7 +244,7 @@ def level1_main():
                 currentCheck=False
         if frame%40==20:
             lastCheck=currentCheck
-        #Change to gui.show(f'{frame:06d}.png') to write images to disk
+
         if lastCheck and currentCheck:
             gui.text("Congratulations!",pos=np.array([0.14,0.5]),font_size=60,color=rgb_to_hex([100,100,100]))  
             gui.text("You pass the game!",pos=np.array([0.18,0.35]),font_size=45,color=rgb_to_hex([100,100,100]))  
