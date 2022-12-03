@@ -56,6 +56,7 @@ is_in = ti.field(dtype=ti.int32,shape=x.shape[0])
 
 wall_polys_np_list = [
     np.array([[0.1,0.9],[0.2,0.9],[0.3,0.7],[0.1,0.6]]).astype(np.float32),
+    np.array([[0.1,0.1],[0.1,0.2],[0.2,0.2],[0.2,0.1]]).astype(np.float32),
 ] 
 wall_polys_vec_list,wall_bound_xs,wall_bound_ys = [],[],[]
 for i in range(len(wall_polys_np_list)):

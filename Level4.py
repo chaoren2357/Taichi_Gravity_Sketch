@@ -90,7 +90,7 @@ def substep():
             mu_0,lambda_0 = mu_0_1,lambda_0_1
         elif material[p] == 2:
             mu_0,lambda_0 = mu_0_2,lambda_0_2
-            
+
         mu, la = mu_0 * h, lambda_0 * h
         if material[p] == 0:  # liquid
             mu = 0.0
