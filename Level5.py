@@ -31,11 +31,11 @@ grid_m = ti.field(dtype=float, shape=(n_grid, n_grid))  # grid node mass
 attractor_strength = ti.field(dtype=float, shape=())
 
 
-attractor_pos_np= np.array([[0.1,0.1],[0.8,0.7],[0.6,0.6]]).astype(np.float32)
+attractor_pos_np= np.array([[0.5,0.5],[0.7,0.4]]).astype(np.float32)
 attractor_pos = ti.Vector.field(2, dtype=float, shape=(attractor_pos_np.shape[0]))
 attractor_pos.from_numpy(attractor_pos_np)
 attractor_on = ti.field(dtype=float, shape=(attractor_pos_np.shape[0]))
-
+attractor_colors = [0xFC2604,0xFCFC04,0x17FC04,]
 
 
 
@@ -140,7 +140,7 @@ def substep():
             # grid_v[i, j] += dt * gravity[None] * 30  # gravity
             for attr_idx in range(attractor_pos.shape[0]):
                 dist = attractor_pos[attr_idx] - dx * ti.Vector([i, j])
-                grid_v[i, j] += dist / (0.01 + dist.norm()) * attractor_strength[None] * dt * 100 * attractor_on[attr_idx]
+                grid_v[i, j] += dist / (0.01 + dist.norm()) * attractor_strength[None] * dt * 100 * (attractor_on[attr_idx] % 3 - 1)
             if i < 3 and grid_v[i, j][0] < 0:
                 grid_v[i, j][0] = 0  # Boundary conditions
             if i > n_grid - 3 and grid_v[i, j][0] > 0:
@@ -256,10 +256,9 @@ def level5_main():
         for taregt_bound_x,taregt_bound_y,material_id in zip(target_bound_xs,target_bound_ys,target_bounds_material):
             gui.lines(begin=taregt_bound_x, end=taregt_bound_y, radius=target_bound_width, color=colors[material_id])   
         for wall_bound_x,wall_bound_y in zip(wall_bound_xs,wall_bound_ys):
-            gui.lines(begin=wall_bound_x, end=wall_bound_y, radius=wall_bound_width, color=0xFFFFFF) 
-        for attractor_x,attractor_y in attractor_pos_np:
-            
-            gui.circle((attractor_x,attractor_y), color=0xFCD63D, radius=15) 
+            gui.lines(begin=wall_bound_x, end=wall_bound_y, radius=wall_bound_width, color=0xFFFFFF)
+        for attr_idx in range(attractor_pos_np.shape[0]):            
+            gui.circle(attractor_pos_np[attr_idx], color=attractor_colors[int(attractor_on[attr_idx] % 3)], radius=15) 
         
         
         if gui.get_event(ti.GUI.PRESS):                                                                                      
@@ -279,11 +278,11 @@ def level5_main():
         if gui.is_pressed(ti.GUI.LMB):
             for attr_idx in range(attractor_pos_np.shape[0]): 
                 if is_click(mouse,attractor_pos_np[attr_idx]):
-                    attractor_on[attr_idx] = 1                                                                      
+                    attractor_on[attr_idx] += 1                                                                      
         if gui.is_pressed(ti.GUI.RMB): 
             for attr_idx in range(attractor_pos_np.shape[0]): 
                 if is_click(mouse,attractor_pos_np[attr_idx]):
-                    attractor_on[attr_idx] = -1      
+                    attractor_on[attr_idx] -= 1      
         drag_damping[None] = damping_scale.value                                                                          
         for s in range(int(2e-3 // dt)):                                                                                     
              substep()                                                                                                       

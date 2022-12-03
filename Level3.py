@@ -56,7 +56,7 @@ is_in = ti.field(dtype=ti.int32,shape=x.shape[0])
 
 wall_polys_np_list = [
     np.array([[0.1,0.9],[0.2,0.9],[0.3,0.7],[0.1,0.6]]).astype(np.float32),
-    np.array([[0.1,0.1],[0.1,0.2],[0.2,0.2],[0.2,0.1]]).astype(np.float32),
+    np.array([[0.2,0.1],[0.3,0.4],[0.2,0.4]]).astype(np.float32),
 ] 
 wall_polys_vec_list,wall_bound_xs,wall_bound_ys = [],[],[]
 for i in range(len(wall_polys_np_list)):
@@ -129,7 +129,7 @@ def substep():
                 grid_v[i, j][1] = 0
             if j > n_grid - 3 and grid_v[i, j][1] > 0:
                 grid_v[i, j][1] = 0
-            if is_pt_in_poly(pt=(i/n_grid,j/n_grid),poly=wall_polys_vec_list[0]) == 1:
+            if is_pt_in_poly(pt=(i/n_grid,j/n_grid),poly=wall_polys_vec_list[1]) == 1:
                 grid_v[i, j][0] = 0
                 grid_v[i, j][1] = 0
 
