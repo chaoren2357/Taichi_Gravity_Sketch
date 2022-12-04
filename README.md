@@ -11,8 +11,8 @@ Sudo 二仙桥
 
 ## 灵感来源
 
-Taichi中很多项目都是基于粒子系统进行模拟，灵机一动想编写一个游戏让玩家能够自己操控粒子，达成一些目标。联想到游戏《投影寻真》的思路，决定设计玩法为通过吸引粒子形成一个形状，并与关卡目标形状对比打分。
-<img width="60" alt="投影寻真游戏图" src="https://user-images.githubusercontent.com/37920501/205470826-14e98d5d-ce0f-40ac-8a93-645f37cc49a9.png">
+Taichi中很多项目都是基于粒子系统进行模拟，灵机一动想编写一个游戏让玩家能够自己操控粒子，达成一些目标。联想到游戏《投影寻真》的思路，决定设计玩法为通过吸引粒子形成一个形状，并与关卡目标形状对比打分。    
+<img width="360" alt="投影寻真游戏图" src="https://user-images.githubusercontent.com/37920501/205470826-14e98d5d-ce0f-40ac-8a93-645f37cc49a9.png">
 
 ## 玩法简介
 
@@ -45,15 +45,13 @@ python3 main.py
 ## 游戏demo
 
 ### 第一关
+<img width="360" alt="Level1" src="https://user-images.githubusercontent.com/37920501/205471895-01ec0383-f80b-4c1d-a2a2-6e5835cdb24e.png">
 
 ### 第二关
+<img width="360" alt="Level1" src="https://user-images.githubusercontent.com/37920501/205471961-dbb2de37-238e-41a2-a542-98ef032297eb.png">
+
 ### 第三关
+<img width="360" alt="Level2" src="https://user-images.githubusercontent.com/37920501/205471932-b17390c1-4aa5-4925-b262-1552197dea05.png">
 
-
-## 改进目标
-
-- 增加不同形状/颜色的粒子，关卡目标的轮廓会针对不同颜色/形状分别设计（比如分片等）；
-- 场地上增加障碍物/流场，影响玩家操作；
-- 引力子对于不同类型的粒子产生不同类型的吸引力；
 
 
