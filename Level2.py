@@ -7,10 +7,10 @@ from taichi.ui.gui import rgb_to_hex
 ti.init(arch=ti.gpu)
 
 ## determine whether the player succeed passing the game
-intersect_ratio=0.6
-n_particles_base=3
+intersect_ratio=0.8
+n_particles_base=9000
 
-quality = 1  # Use a larger value for higher-res simulations                                                             
+quality = 2  # Use a larger value for higher-res simulations                                                             
 n_particles, n_grid = n_particles_base * quality**2, 128 * quality                                                                   
 dx, inv_dx = 1 / n_grid, float(n_grid)                                                                                   
 dt = 1e-4 / quality
@@ -40,11 +40,10 @@ drag_damping = ti.field(dtype=ti.f32, shape=())
 #set Target Shape------------------------------------------------------------
 
 target_polys_np_list = [
-    np.array([[0.2,0.4],[0.6,0.4],[0.4,0.1]]).astype(np.float32),
     np.array([[0.2,0.6],[0.6,0.6],[0.4,0.9]]).astype(np.float32),
-    
+    np.array([[0.2,0.4],[0.4,0.1],[0.6,0.4]]).astype(np.float32),
     ]
-target_bounds_material = [2,2]
+target_bounds_material = [2,0]
 target_polys_vec_list,target_bound_xs,target_bound_ys = [],[],[]
 for i in range(len(target_polys_np_list)):
     target_poly_temp = ti.Vector.field(2, dtype=float,shape=(target_polys_np_list[i].shape[0],))
@@ -166,8 +165,7 @@ def reset():
         ]  
         ## initial positions-------------------------------------------------                                                                                                              
         material[i] = i // group_size  # 0: fluid 1: jelly 2: snow     
-        if i//group_size==0:
-            material[i]=2
+
         v[i] = [0, 0]                                                                                                    
         F[i] = ti.Matrix([[1, 0], [0, 1]])                                                                               
         Jp[i] = 1                                                                                                        
@@ -195,7 +193,7 @@ def update_isin():
     for pt in x:
         in_target_bound_0 = is_pt_in_poly(x[pt],target_polys_vec_list[0])
         in_target_bound_1 = is_pt_in_poly(x[pt],target_polys_vec_list[1])
-        print(in_target_bound_0,in_target_bound_1,target_bounds_material,material[pt])
+        # print(in_target_bound_0,in_target_bound_1,target_bounds_material,material[pt])
 
         is_in[pt] = 0
         if in_target_bound_0 == 1 and target_bounds_material[0] == material[pt]:
@@ -258,10 +256,6 @@ def level2_main():
         # update time--------------------------------------------------------------
         update_isin()
         score.value = min(100.000,is_in.to_numpy().sum() / (is_in.to_numpy().shape[0]*2/3) *100)
-        if frame%100==0:
-            print(is_in.to_numpy().sum())
-            print((is_in.to_numpy().shape[0]*2/3))
-            print('--------------------------')
         if score.value >= 100*intersect_ratio:
             win_flag = True
         if win_flag:

@@ -7,7 +7,7 @@ from taichi.ui.gui import rgb_to_hex
 ti.init(arch=ti.gpu)
 
 ## determine whether the player succeed passing the game
-intersect_ratio=0.95
+intersect_ratio=0.92
 n_particles_base=9000
 
 quality = 2  # Use a larger value for higher-res simulations                                                             
@@ -259,4 +259,3 @@ def level1_main():
         frame+=1
         gui.show()
     return True
-level1_main()

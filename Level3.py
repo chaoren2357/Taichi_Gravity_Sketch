@@ -17,10 +17,6 @@ dt = 1e-4 / quality
 p_vol,p_rho = (dx * 0.5)**2,1
 p_mass = p_vol * p_rho                                                                                                   
 
-E, nu = 5e3, 0.2  # Young's modulus and Poisson's ratio
-mu_0, lambda_0 = E / (2 * (1 + nu)), E * nu / (
-    (1 + nu) * (1 - 2 * nu))  # Lame parameters                                                         
-colors = [0x068587, 0xED553B, 0xEEEEF0]
 
 x = ti.Vector.field(2, dtype=float, shape=n_particles)  # position                                                       
 v = ti.Vector.field(2, dtype=float, shape=n_particles)  # velocity                                                       
@@ -30,12 +26,30 @@ material = ti.field(dtype=int, shape=n_particles)  # material id
 Jp = ti.field(dtype=float, shape=n_particles)  # plastic deformation                                                     
 grid_v = ti.Vector.field(2, dtype=float,shape=(n_grid, n_grid))  # grid node momentum/velocity                                          
 grid_m = ti.field(dtype=float, shape=(n_grid, n_grid))  # grid node mass                                                 
-# gravity = ti.Vector.field(2, dtype=float, shape=())                                                                      
-attractor_strength = ti.field(dtype=float, shape=())                                                                     
-attractor_pos = ti.Vector.field(2, dtype=float, shape=())  
+
+
+attractor_strength = ti.field(dtype=float, shape=())
+
+
+attractor_pos_np= np.array([[0.6,0.6],[0.3,0.3],[0.07,0.9],[0.4,0.7],[0.07,0.07],[0.6,0.9],[0.95,0.7],[0.8,0.1],[0.7,0.3]]).astype(np.float32)
+attractor_pos = ti.Vector.field(2, dtype=float, shape=(attractor_pos_np.shape[0]))
+attractor_pos.from_numpy(attractor_pos_np)
+attractor_on = ti.field(dtype=float, shape=(attractor_pos_np.shape[0]))
+attractor_colors = [0xFC2604,0xFCFC04,0x17FC04,]
+
+
+
 drag_damping = ti.field(dtype=ti.f32, shape=())
 
 
+
+E_np = np.array([5e3,5e3,5e3]),   # Young's modulus and Poisson's ratio
+nu_np = np.array([0.2,0.3,0.2])
+mu_0_np = (E_np / (2 * (1 + nu_np))).flatten()
+lambda_0_np = (E_np * nu_np / ((1 + nu_np) * (1 - 2 * nu_np))).flatten()  # Lame parameters 
+mu_0_0,mu_0_1,mu_0_2 = mu_0_np
+lambda_0_0,lambda_0_1,lambda_0_2 = lambda_0_np
+colors = [0x068587, 0xED553B, 0xEEEEF0]
 
 #set Target Shape------------------------------------------------------------
 
@@ -56,7 +70,9 @@ is_in = ti.field(dtype=ti.int32,shape=x.shape[0])
 
 wall_polys_np_list = [
     np.array([[0.1,0.9],[0.2,0.9],[0.3,0.7],[0.1,0.6]]).astype(np.float32),
-    np.array([[0.1,0.1],[0.1,0.2],[0.2,0.2],[0.2,0.1]]).astype(np.float32),
+    np.array([[0.3,0.8],[0.4,0.8],[0.9,0.7],[0.8,0.7],[0.4,0.75]]).astype(np.float32),
+    np.array([[0.1,0.07],[0.1,0.5],[0.2,0.1],[0.7,0.07]]).astype(np.float32),
+    np.array([[0.9,0.6],[0.97,0.4],[0.72,0.1],[0.85,0.45]]).astype(np.float32),
 ] 
 wall_polys_vec_list,wall_bound_xs,wall_bound_ys = [],[],[]
 for i in range(len(wall_polys_np_list)):
@@ -83,6 +99,13 @@ def substep():
         h = max(0.1, min(5, ti.exp(10 * (1.0 - Jp[p]))))
         if material[p] == 1:  # jelly, make it softer
             h = 0.3
+
+        mu_0,lambda_0 = mu_0_0,lambda_0_0
+        if material[p] == 1:
+            mu_0,lambda_0 = mu_0_1,lambda_0_1
+        elif material[p] == 2:
+            mu_0,lambda_0 = mu_0_2,lambda_0_2
+            
         mu, la = mu_0 * h, lambda_0 * h
         if material[p] == 0:  # liquid
             mu = 0.0
@@ -118,9 +141,9 @@ def substep():
             # Momentum to velocity
             grid_v[i, j] = (1 / grid_m[i, j]) * grid_v[i, j]
             # grid_v[i, j] += dt * gravity[None] * 30  # gravity
-            dist = attractor_pos[None] - dx * ti.Vector([i, j])
-            grid_v[i, j] += \
-                dist / (0.01 + dist.norm()) * attractor_strength[None] * dt * 100
+            for attr_idx in range(attractor_pos.shape[0]):
+                dist = attractor_pos[attr_idx] - dx * ti.Vector([i, j])
+                grid_v[i, j] += dist / (0.01 + dist.norm()) * attractor_strength[None] * dt / ((dist.norm())**2 + 0.01) * (attractor_on[attr_idx] % 3 - 1)
             if i < 3 and grid_v[i, j][0] < 0:
                 grid_v[i, j][0] = 0  # Boundary conditions
             if i > n_grid - 3 and grid_v[i, j][0] > 0:
@@ -132,7 +155,15 @@ def substep():
             if is_pt_in_poly(pt=(i/n_grid,j/n_grid),poly=wall_polys_vec_list[0]) == 1:
                 grid_v[i, j][0] = 0
                 grid_v[i, j][1] = 0
-
+            if is_pt_in_poly(pt=(i/n_grid,j/n_grid),poly=wall_polys_vec_list[1]) == 1:
+                grid_v[i, j][0] = 0
+                grid_v[i, j][1] = 0
+            if is_pt_in_poly(pt=(i/n_grid,j/n_grid),poly=wall_polys_vec_list[2]) == 1:
+                grid_v[i, j][0] = 0
+                grid_v[i, j][1] = 0
+            if is_pt_in_poly(pt=(i/n_grid,j/n_grid),poly=wall_polys_vec_list[3]) == 1:
+                grid_v[i, j][0] = 0
+                grid_v[i, j][1] = 0
 
     for p in x:  # grid to particle (G2P)
         base = (x[p] * inv_dx - 0.5).cast(int)
@@ -213,9 +244,10 @@ def update_isin():
             is_in[pt] = 1
         # elif in_target_bound_1 == 1 and target_bounds_material[1] == material[pt]:
         #     is_in[pt] = 1
-
+def is_click(mouse_pos,aim_pos,r=15/720):
+    return ((mouse_pos - aim_pos)** 2).sum() < r**2
 def level3_main():   
-    gui = ti.GUI("Level1", res=720, background_color=0x112F41)    
+    gui = ti.GUI("Level3", res=720, background_color=0x112F41)    
     # Show the score and time -----------------------------------------------------
     score = gui.label('Score')
     time_record = gui.label('Time(s)')   
@@ -235,7 +267,11 @@ def level3_main():
         for taregt_bound_x,taregt_bound_y,material_id in zip(target_bound_xs,target_bound_ys,target_bounds_material):
             gui.lines(begin=taregt_bound_x, end=taregt_bound_y, radius=target_bound_width, color=colors[material_id])   
         for wall_bound_x,wall_bound_y in zip(wall_bound_xs,wall_bound_ys):
-            gui.lines(begin=wall_bound_x, end=wall_bound_y, radius=wall_bound_width, color=0xFFFFFF) 
+            gui.lines(begin=wall_bound_x, end=wall_bound_y, radius=wall_bound_width, color=0xA9F103)
+        for attr_idx in range(attractor_pos_np.shape[0]):            
+            gui.circle(attractor_pos_np[attr_idx], color=attractor_colors[int(attractor_on[attr_idx] % 3)], radius=15) 
+        
+        
         if gui.get_event(ti.GUI.PRESS):                                                                                      
             if gui.event.key == 'r':                                                                                         
                 reset()    
@@ -245,17 +281,18 @@ def level3_main():
             elif gui.event.key in [ti.GUI.ESCAPE, ti.GUI.EXIT]:                                                              
                 break                                                                                                        
                                                                                               
-        mouse = gui.get_cursor_pos()                                                                                         
-        gui.circle((mouse[0], mouse[1]), color=0x336699, radius=15)                                                          
-        attractor_pos[None] = [mouse[0], mouse[1]] 
+        mouse = gui.get_cursor_pos()                                                         
+        # attractor_pos[None] = [mouse[0], mouse[1]] 
                                                                        
-        attractor_strength[None]=0                                                                               
-        if gui.is_pressed(ti.GUI.LMB):   
-            if mouse[0]<X_border or mouse[1]<Y_border:                                                                                    
-                attractor_strength[None] = (14/(np.e-1)*np.exp(attract_scale.value/100) + 2-14/(np.e-1))                                                                                
+        attractor_strength[None] = (14/(np.e-1)*np.exp(attract_scale.value/100) + 2-14/(np.e-1))                                                                             
+        if gui.is_pressed(ti.GUI.LMB):
+            for attr_idx in range(attractor_pos_np.shape[0]): 
+                if is_click(mouse,attractor_pos_np[attr_idx]):
+                    attractor_on[attr_idx] += 1                                                                      
         if gui.is_pressed(ti.GUI.RMB): 
-            if mouse[0]<X_border or mouse[1]<Y_border:                                                                                         
-                attractor_strength[None] = -(14/(np.e-1)*np.exp(attract_scale.value/100) + 2-14/(np.e-1))   
+            for attr_idx in range(attractor_pos_np.shape[0]): 
+                if is_click(mouse,attractor_pos_np[attr_idx]):
+                    attractor_on[attr_idx] -= 1      
         drag_damping[None] = damping_scale.value                                                                          
         for s in range(int(2e-3 // dt)):                                                                                     
              substep()                                                                                                       
@@ -270,12 +307,12 @@ def level3_main():
         time_record.value = current_time
         # update time--------------------------------------------------------------
         update_isin()
-        score.value = is_in.to_numpy().sum() / is_in.to_numpy().shape[0] / intersect_ratio
-        if score.value >= 1.0:
+        score.value = min(100.000,is_in.to_numpy().sum() / (is_in.to_numpy().shape[0]*2/3) *100)
+        if score.value >= 100*intersect_ratio:
             win_flag = True
-            gui.text("Congratulations!",pos=np.array([0.14,0.5]),font_size=60,color=rgb_to_hex([100,100,100]))  
-            gui.text("You pass the game!",pos=np.array([0.18,0.35]),font_size=45,color=rgb_to_hex([100,100,100])) 
+        if win_flag:
+            gui.text("Congratulations!",pos=np.array([0.22,0.5]),font_size=60,color=0x00CCCC ) 
+            gui.text("You pass the game!",pos=np.array([0.24,0.35]),font_size=45,color=0x00CCCC ) 
         frame+=1
         gui.show()
     return True
-level3_main()
