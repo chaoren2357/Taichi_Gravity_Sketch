@@ -110,7 +110,7 @@ def substep():
             # grid_v[i, j] += dt * gravity[None] * 30  # gravity
             dist = attractor_pos[None] - dx * ti.Vector([i, j])
             grid_v[i, j] += \
-                dist / (0.01 + dist.norm()) * attractor_strength[None] * dt * 100
+                dist / (0.01 + dist.norm()) * attractor_strength[None] * dt / ((dist.norm())**2 + 0.01)
             if i < 3 and grid_v[i, j][0] < 0:
                 grid_v[i, j][0] = 0  # Boundary conditions
             if i > n_grid - 3 and grid_v[i, j][0] > 0:
@@ -144,18 +144,19 @@ def reset():
         group_n=i // group_size
         if group_n==0:
             x[i] = [                                                                                                         
-            ti.random() * 0.98 + 0.01,                                                          
-            ti.random() * 0.05+0.01                                                          
+            ti.random() * 0.985 + 0.01,                                                          
+            ti.random() * 0.05+0.005                                                         
         ]  
         elif group_n==1:
             x[i] = [                                                                                                         
-            ti.random() * 0.98+0.01,                                                          
-            ti.random() * 0.05+0.94                                                         
+            ti.random() * 0.985+0.01,                                                        
+            ti.random() * 0.05+0.445   
+                                                                
         ]  
         elif group_n==2:
             x[i] = [                                                                                                         
-            ti.random() * 0.05,                                                          
-            ti.random() * 0.9+0.05                                                          
+            ti.random() * 0.985+0.01,                                                          
+            ti.random() * 0.05+0.945                                             
         ]  
         else:
             x[i] = [                                                                                                         
@@ -199,7 +200,7 @@ def update_isin():
         #     is_in[pt] = 1
 
 def level2_main():   
-    gui = ti.GUI("Level1", res=720, background_color=0x112F41)    
+    gui = ti.GUI("Level2", res=720, background_color=0x112F41)    
     # Show the score and time -----------------------------------------------------
     score = gui.label('Score')
     time_record = gui.label('Time(s)')   
@@ -252,11 +253,13 @@ def level2_main():
         time_record.value = current_time
         # update time--------------------------------------------------------------
         update_isin()
-        score.value = is_in.to_numpy().sum() / is_in.to_numpy().shape[0] / intersect_ratio
-        if score.value >= 1.0:
+        score.value = min(100,is_in.to_numpy().sum() / is_in.to_numpy().shape[0] *100)
+        if score.value >= 100*intersect_ratio:
             win_flag = True
-            gui.text("Congratulations!",pos=np.array([0.14,0.5]),font_size=60,color=rgb_to_hex([100,100,100]))  
-            gui.text("You pass the game!",pos=np.array([0.18,0.35]),font_size=45,color=rgb_to_hex([100,100,100])) 
+        if win_flag:
+            gui.text("Congratulations!",pos=np.array([0.22,0.5]),font_size=60,color=0x00CCCC ) 
+            gui.text("You pass the game!",pos=np.array([0.24,0.35]),font_size=45,color=0x00CCCC ) 
         frame+=1
         gui.show()
     return True
+level2_main()

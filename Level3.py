@@ -278,3 +278,4 @@ def level3_main():
         frame+=1
         gui.show()
     return True
+level3_main()
