@@ -7,7 +7,7 @@ from taichi.ui.gui import rgb_to_hex
 ti.init(arch=ti.gpu)
 
 ## determine whether the player succeed passing the game
-intersect_ratio=0.5
+intersect_ratio=0.95
 n_particles_base=9000
 
 quality = 2  # Use a larger value for higher-res simulations                                                             
@@ -41,9 +41,8 @@ drag_damping = ti.field(dtype=ti.f32, shape=())
 
 target_polys_np_list = [
     np.array([[0.2,0.4],[0.5,0.1],[0.8,0.4],[0.5,0.7]]).astype(np.float32),
-    np.array([[0.1,0.1],[0.1,0.2],[0.2,0.2]]).astype(np.float32),
     ]
-target_bounds_material = [2,2]
+target_bounds_material = [2]
 target_polys_vec_list,target_bound_xs,target_bound_ys = [],[],[]
 for i in range(len(target_polys_np_list)):
     target_poly_temp = ti.Vector.field(2, dtype=float,shape=(target_polys_np_list[i].shape[0],))
@@ -110,7 +109,7 @@ def substep():
             # grid_v[i, j] += dt * gravity[None] * 30  # gravity
             dist = attractor_pos[None] - dx * ti.Vector([i, j])
             grid_v[i, j] += \
-                dist / (0.01 + dist.norm()) * attractor_strength[None] * dt * 100
+                dist / (0.01 + dist.norm()) * attractor_strength[None] * dt / ((dist.norm())**2 + 0.01)
             if i < 3 and grid_v[i, j][0] < 0:
                 grid_v[i, j][0] = 0  # Boundary conditions
             if i > n_grid - 3 and grid_v[i, j][0] > 0:
@@ -138,29 +137,29 @@ def substep():
                                                                                                                                                                                                                                                                                                 
 @ti.kernel                                                                                                             
 def reset():                                                                                                             
-    group_size = n_particles // 3                                                                                        
+    group_size = n_particles // 4                                                                                        
     for i in range(n_particles):  
         ## initial positions-------------------------------------------------
         group_n=i // group_size
         if group_n==0:
             x[i] = [                                                                                                         
-            ti.random() * 0.98 + 0.01,                                                          
-            ti.random() * 0.05+0.01                                                          
+            ti.random() * 0.985 + 0.01,                                                          
+            ti.random() * 0.05+0.005                                                          
         ]  
         elif group_n==1:
             x[i] = [                                                                                                         
-            ti.random() * 0.98+0.01,                                                          
-            ti.random() * 0.05+0.94                                                         
+            ti.random() * 0.985+0.01,                                                          
+            ti.random() * 0.05+0.945                                                         
         ]  
         elif group_n==2:
             x[i] = [                                                                                                         
             ti.random() * 0.05,                                                          
-            ti.random() * 0.9+0.05                                                          
+            ti.random() * 0.985+0.01                                                          
         ]  
         else:
             x[i] = [                                                                                                         
-            ti.random() * 0.2 + 0.3 + 0.10 * (i // group_size),                                                          
-            ti.random() * 0.2 + 0.05 + 0.32 * (i // group_size)                                                          
+            ti.random() * 0.05 +0.945 ,                                                          
+            ti.random() * 0.985+0.01                                                            
         ]  
         ## initial positions-------------------------------------------------                                                                                                              
         # material[i] = i // group_size  # 0: fluid 1: jelly 2: snow     
@@ -192,12 +191,10 @@ def is_pt_in_poly(pt,poly):
 def update_isin():
     for pt in x:
         in_target_bound_0 = is_pt_in_poly(x[pt],target_polys_vec_list[0])
-        in_target_bound_1 = is_pt_in_poly(x[pt],target_polys_vec_list[1])
         is_in[pt] = 0
         if in_target_bound_0 == 1 and target_bounds_material[0] == material[pt]:
             is_in[pt] = 1
-        elif in_target_bound_1 == 1 and target_bounds_material[1] == material[pt]:
-            is_in[pt] = 1
+        
 
 def level1_main():   
     gui = ti.GUI("Level1", res=720, background_color=0x112F41)    
@@ -253,11 +250,13 @@ def level1_main():
         time_record.value = current_time
         # update time--------------------------------------------------------------
         update_isin()
-        score.value = is_in.to_numpy().sum() / is_in.to_numpy().shape[0] / intersect_ratio
-        if score.value >= 1.0:
+        score.value = min(100,is_in.to_numpy().sum() / is_in.to_numpy().shape[0] *100)
+        if score.value >= 100*intersect_ratio:
             win_flag = True
-            gui.text("Congratulations!",pos=np.array([0.14,0.5]),font_size=60,color=rgb_to_hex([100,100,100]))  
-            gui.text("You pass the game!",pos=np.array([0.18,0.35]),font_size=45,color=rgb_to_hex([100,100,100])) 
+        if win_flag:
+            gui.text("Congratulations!",pos=np.array([0.22,0.5]),font_size=60,color=0x00CCCC ) 
+            gui.text("You pass the game!",pos=np.array([0.24,0.35]),font_size=45,color=0x00CCCC ) 
         frame+=1
         gui.show()
     return True
+level1_main()
