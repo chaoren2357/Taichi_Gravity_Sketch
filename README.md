@@ -1,39 +1,54 @@
-# Taichi_Gravity_Sketch
+# Taichi_Gravity_Sketch  
+Gravity Sketch    
+引力绘图：以引力做画笔，以宇宙做画布  
 
-以引力做画笔，以宇宙做画布
-
-Using gravity as a brush, and the universe as a canvas
-
-# 团队名
-
+# 团队名  
 Sudo 二仙桥
-
-Sudo Twin-Fairies Bridge
-
-# 项目名
-
-引力绘图
-
-Gravity Sketch
 
 # 项目介绍
 
-本项目旨在利用Taichi在模拟粒子物理运动方面的计算优势实现一个绘图游戏。
+利用Taichi在模拟粒子物理运动方面的计算优势实现一个绘图游戏。
 
 ## 灵感来源
 
-看到Taichi中很多项目都是基于粒子系统进行模拟，灵机一动想编写一个游戏让玩家能够自己操控粒子，达成一些目标。联想到游戏《投影寻真》的思路，决定设计玩法为通过吸引粒子形成一个形状，并与关卡目标形状对比打分。
+Taichi中很多项目都是基于粒子系统进行模拟，灵机一动想编写一个游戏让玩家能够自己操控粒子，达成一些目标。联想到游戏《投影寻真》的思路，决定设计玩法为通过吸引粒子形成一个形状，并与关卡目标形状对比打分。
+<img width="60" alt="投影寻真游戏图" src="https://user-images.githubusercontent.com/37920501/205470826-14e98d5d-ce0f-40ac-8a93-645f37cc49a9.png">
 
-## 实现功能
+## 玩法简介
 
-- 玩家拥有一定数量的粒子可供使用，并有给定的绘图目标（形状轮廓线）。
-- 玩家通过鼠标/触摸屏幕操控引力子的位置和引力的打开或关闭来吸引粒子。
-- 玩家的游戏目标是将吸引到的粒子所构成形状的与目标轮廓图基本吻合。
+- 场地中有不同种类的粒子以及绘图目标（形状轮廓线）。
+- 玩家通过鼠标操控引力子的位置和引力的打开或关闭来吸引粒子。
+- 玩家的游戏目标是将吸引到的粒子所构成形状的与相应目标轮廓图基本吻合，达到目标分数（每关不同，100分为完全完成）。
+- 鼠标左键构建吸引源，鼠标右键构建排斥源；如果是固定的吸引子，则红色表示排斥，绿色表示吸引，黄色表示不工作。
+- 可以自行修改引力大小与阻尼大小。
 
-## 设计展示
+## 游戏特性
 
-<img width="387" alt="pic1" src="https://user-images.githubusercontent.com/37920501/203885822-c558f7ba-f5d1-4115-ae3f-b901e4ce0ed5.png">
-<img width="387" alt="pic2" src="https://user-images.githubusercontent.com/37920501/203885851-92aae210-d01c-4f5c-b525-936eaf61dda3.png">
+- 算法基于MLS-MPM算法，主要参考[mpm128.py](https://github.com/taichi-dev/taichi/blob/master/python/taichi/examples/simulation/mpm128.py)实现。
+- 修改了引力特性，使得距离远的粒子吸引力小。
+- 修改了速度规则，增加了阻尼。
+- 增加了墙的判断。
+- 增加了固定吸引点。
+- 增加了不同材料（E，mu）的支持。
+
+
+## 游戏特性 
+
+# 开始使用
+## 安装方式
+如果已经有Python3后，可以按下述方法进行安装
+
+```sh
+pip3 install -r requirements.txt
+python3 main.py
+```
+## 游戏demo
+
+### 第一关
+
+### 第二关
+### 第三关
+
 
 ## 改进目标
 
@@ -41,43 +56,4 @@ Gravity Sketch
 - 场地上增加障碍物/流场，影响玩家操作；
 - 引力子对于不同类型的粒子产生不同类型的吸引力；
 
-# 12/03 Update
 
-- 项目主要基于MLS-MPM算法，参考mpm128.py的实现进行设计。
-
-# Taichi_Gravity_Sketch
-
-Using gravity as a brush, and the universe as a canvas
-
-# Group Name
-
-Sudo Twin-Fairies Bridge
-
-# Project Name
-
-Gravity Sketch
-
-# Introduction
-
-This project aims to take advantage of Taichi's computational speed in simulating the physical motion of particles to implement a drawing game.
-
-## Background
-
-Considering that many Taichi-related projects are based on particle simulation systems, we planned to implement a game that allows players to manipulate particles and achieve some goals by themselves. Inspired by the idea of the game "Shadowmatic", we decided to design the game by attracting particles to form a shape and scoring it against the target shape.
-
-## Functions
-
-- The player is initially given a certain number of particles and a drawing target (shape contour line).
-- The player manipulates the position and the opening/closing of the graviton to attract the surrounding particles by using the mouse or screen touch.
-- The player aims to match the shape of the attracted particles to the target contour map.
-
-## Presentation
-
-<img width="387" alt="pic1" src="https://user-images.githubusercontent.com/37920501/203885822-c558f7ba-f5d1-4115-ae3f-b901e4ce0ed5.png">
-<img width="387" alt="pic2" src="https://user-images.githubusercontent.com/37920501/203885851-92aae210-d01c-4f5c-b525-936eaf61dda3.png">
-
-## Possiple Upgrades
-
-- Adding particles of different shapes/colors, and the target shapes outline of different difficulty levels will be specially designed (e.g. split pieces, etc.).
-- Adding obstacles/flow fields on the field that can affect the player's control of particles.
-- Gravitons produce different types of attractions for different particles.
