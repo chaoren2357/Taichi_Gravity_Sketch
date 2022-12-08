@@ -7,7 +7,7 @@ from taichi.ui.gui import rgb_to_hex
 ti.init(arch=ti.gpu)
 
 ## determine whether the player succeed passing the game
-intersect_ratio=0.5
+intersect_ratio=0.9
 n_particles_base=9000
 
 quality = 2  # Use a larger value for higher-res simulations                                                             
@@ -31,7 +31,7 @@ grid_m = ti.field(dtype=float, shape=(n_grid, n_grid))  # grid node mass
 attractor_strength = ti.field(dtype=float, shape=())
 
 
-attractor_pos_np= np.array([[0.6,0.6],[0.3,0.3],[0.07,0.9],[0.4,0.7],[0.07,0.07],[0.6,0.9],[0.95,0.7],[0.8,0.1],[0.7,0.3]]).astype(np.float32)
+attractor_pos_np= np.array([[0.5,0.5],[0.6,0.6],[0.3,0.3],[0.07,0.9],[0.3,0.6],[0.07,0.07],[0.6,0.9],[0.95,0.7],[0.8,0.1],[0.7,0.3]]).astype(np.float32)
 attractor_pos = ti.Vector.field(2, dtype=float, shape=(attractor_pos_np.shape[0]))
 attractor_pos.from_numpy(attractor_pos_np)
 attractor_on = ti.field(dtype=float, shape=(attractor_pos_np.shape[0]))
@@ -316,3 +316,4 @@ def level3_main():
         frame+=1
         gui.show()
     return True
+level3_main()
